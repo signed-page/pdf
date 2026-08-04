@@ -228,9 +228,9 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "base64"
-version = "0.23.0"
+version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b25655df2c3cdd83c5e5b293b88acd880332b2ddadd7c30ac43144fdc0033da9"
+checksum = "ac07cdecf99051d9a5238b80f35af32cdeba5b336e55d957b318b50137e18da5"
 
 [[package]]
 name = "base64ct"
@@ -2845,7 +2845,7 @@ name = "pdf-sign-cli"
 version = "0.2.0"
 dependencies = [
  "anyhow",
- "base64 0.23.0",
+ "base64 0.23.1",
  "clap",
  "console",
  "indicatif",
@@ -2864,7 +2864,7 @@ name = "pdf-sign-core"
 version = "0.2.0"
 dependencies = [
  "anyhow",
- "base64 0.23.0",
+ "base64 0.23.1",
  "bilrost",
  "bilrost-derive",
  "serde",
@@ -2878,7 +2878,7 @@ name = "pdf-sign-gpg"
 version = "0.2.0"
 dependencies = [
  "anyhow",
- "base64 0.23.0",
+ "base64 0.23.1",
  "chrono",
  "pdf-sign-core",
  "sequoia-gpg-agent",
@@ -2895,7 +2895,7 @@ name = "pdf-sign-sigstore"
 version = "0.2.0"
 dependencies = [
  "anyhow",
- "base64 0.23.0",
+ "base64 0.23.1",
  "const-oid 0.10.2",
  "openidconnect",
  "pdf-sign-core",
@@ -2916,7 +2916,7 @@ name = "pdf-sign-wasm"
 version = "0.2.0"
 dependencies = [
  "anyhow",
- "base64 0.23.0",
+ "base64 0.23.1",
  "console_error_panic_hook",
  "pdf-sign-core",
  "pdf-sign-gpg",
