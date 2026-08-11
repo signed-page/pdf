@@ -160,7 +160,7 @@ rec {
         }
       );
 
-  muslCC = if muslTarget == null then null else lib.getExe' pkgs.pkgsStatic.stdenv.cc "cc";
+  muslCC = if muslTarget == null then null else lib.getExe pkgs.pkgsStatic.stdenv.cc;
 
   muslTargetEnv =
     if muslTarget == null then
