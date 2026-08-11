@@ -424,7 +424,7 @@ jobs:
     name: Open Formula update
     needs: [resolve, release-build, dispatch]
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     permissions:
       contents: read
     steps:
@@ -475,35 +475,42 @@ jobs:
         with:
           name: pdf-sign
 
-      - name: Wait for the exact public bottle index
+      - name: Wait for verified public bottle index
         shell: nix develop ./source --command bash -euo pipefail {0}
         run: |
           expected_digest="$(jq -er '.oci.indexDigest' release-metadata/release.json)"
+          version="${{ needs.resolve.outputs.version }}"
+          verified_tag="$version-verified"
           auth_file="$RUNNER_TEMP/anonymous-registry-auth.json"
           manifest_file="$RUNNER_TEMP/pdf-bottle-index.json"
+          version_manifest_file="$RUNNER_TEMP/pdf-bottle-version-index.json"
           error_file="$RUNNER_TEMP/pdf-bottle-inspect.err"
           printf '{"auths":{}}\n' > "$auth_file"
 
-          max_attempts=160
+          max_attempts=320
           for ((attempt = 1; attempt <= max_attempts; attempt++)); do
-            if skopeo inspect --authfile "$auth_file" --raw "docker://$BOTTLE_IMAGE:${{ needs.resolve.outputs.version }}" \
+            if skopeo inspect --authfile "$auth_file" --raw "docker://$BOTTLE_IMAGE:$verified_tag" \
               > "$manifest_file" 2> "$error_file"; then
-              media_type="$(jq -er '.mediaType' "$manifest_file")"
-              if [[ "$media_type" != "application/vnd.oci.image.index.v1+json" ]]; then
-                echo "Published tag is not an OCI image index: $media_type" >&2
+              actual_digest="sha256:$(sha256sum "$manifest_file" | cut -d ' ' -f 1)"
+              if [[ "$actual_digest" != "$expected_digest" ]]; then
+                echo "Verified completion tag has unexpected digest $actual_digest (expected $expected_digest)" >&2
                 exit 1
               fi
-              actual_digest="sha256:$(sha256sum "$manifest_file" | cut -d ' ' -f 1)"
-              if [[ "$actual_digest" == "$expected_digest" ]]; then
-                echo "Observed immutable public bottle index $actual_digest"
-                break
+
+              skopeo inspect --authfile "$auth_file" --raw "docker://$BOTTLE_IMAGE:$version" \
+                > "$version_manifest_file"
+              version_digest="sha256:$(sha256sum "$version_manifest_file" | cut -d ' ' -f 1)"
+              if [[ "$version_digest" != "$expected_digest" ]]; then
+                echo "Published version tag has unexpected digest $version_digest (expected $expected_digest)" >&2
+                exit 1
               fi
-              echo "Published version tag has unexpected digest $actual_digest (expected $expected_digest)" >&2
-              exit 1
+
+              echo "Observed verified public bottle index $actual_digest"
+              break
             fi
 
             if ((attempt == max_attempts)); then
-              echo "Bottle index did not become anonymously readable" >&2
+              echo "Verified bottle index did not become anonymously readable" >&2
               cat "$error_file" >&2
               exit 1
             fi
