@@ -35,7 +35,7 @@ jobs:
       source_sha: ${{ steps.resolve.outputs.source_sha }}
     steps:
       - name: Checkout requested tag
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -125,7 +125,7 @@ jobs:
             runs_on: macos-26
     steps:
       - name: Checkout resolved commit
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -155,7 +155,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout resolved commit
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -457,7 +457,7 @@ jobs:
           jq -e 'type == "object"' release-metadata/pdf.bottle.json >/dev/null
 
       - name: Checkout resolved source for pinned OCI tooling
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -534,7 +534,7 @@ jobs:
           permission-pull-requests: write
 
       - name: Checkout tap with App token
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: signed-page/homebrew-tap
           ref: main
