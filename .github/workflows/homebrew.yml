@@ -132,7 +132,7 @@ jobs:
           ref: ${{ needs.resolve.outputs.source_sha }}
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31
         with:
           extra_nix_config: |
             accept-flake-config = true
@@ -162,7 +162,7 @@ jobs:
           ref: ${{ needs.resolve.outputs.source_sha }}
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31
         with:
           extra_nix_config: |
             accept-flake-config = true
@@ -222,7 +222,7 @@ jobs:
           cp --dereference "$bottle_json" formula-metadata/pdf.bottle.json
 
       - name: Upload source publication inputs
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: homebrew-source-${{ needs.resolve.outputs.source_sha }}
           path: source-publication/
@@ -231,7 +231,7 @@ jobs:
           compression-level: 0
 
       - name: Upload Formula metadata
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: homebrew-metadata-${{ needs.resolve.outputs.source_sha }}
           path: formula-metadata/
@@ -250,7 +250,7 @@ jobs:
       attestations: write
     steps:
       - name: Download source publication inputs
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: homebrew-source-${{ needs.resolve.outputs.source_sha }}
           path: release-artifact
@@ -361,7 +361,7 @@ jobs:
           fi
 
       - name: Attest published source asset
-        uses: actions/attest-build-provenance@v4
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
         with:
           subject-path: ${{ runner.temp }}/published-source/pdf-sign-${{ needs.resolve.outputs.version }}-source.tar.gz
 
@@ -429,7 +429,7 @@ jobs:
       contents: read
     steps:
       - name: Download Formula metadata
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: homebrew-metadata-${{ needs.resolve.outputs.source_sha }}
           path: release-metadata
@@ -465,7 +465,7 @@ jobs:
           path: source
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31
         with:
           extra_nix_config: |
             accept-flake-config = true
