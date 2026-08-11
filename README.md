@@ -1,6 +1,6 @@
 # pdf-sign
 
-[![built with garnix](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fgarnix.io%2Fapi%2Fbadges%2F0x77dev%2Fpdf-sign%3Fbranch%3Dmain)](https://garnix.io/repo/0x77dev/pdf-sign) [![CI](https://github.com/0x77dev/pdf-sign/actions/workflows/ci.yml/badge.svg)](https://github.com/0x77dev/pdf-sign/actions/workflows/ci.yml)
+[![CI](https://github.com/signed-page/pdf/actions/workflows/ci.yml/badge.svg)](https://github.com/signed-page/pdf/actions/workflows/ci.yml)
 
 PDF signing utility written in Rust that supports both **OpenPGP (GPG)** and **Sigstore (keyless OIDC)** signatures, appending cryptographic signatures directly to PDFs, making it easy to sign and verify documents without heavyweight PDF signing stacks, making your PDFs authentic, tamper-proof, while being fully compatible with regular readers.
 
@@ -23,17 +23,24 @@ Many "enterprise PDF signing" solutions require a full **CMS/PKCS#7** / **X.509 
 
 ## Quickstart
 
+### Install with Homebrew
+
+```bash
+brew install signed-page/tap/pdf
+pdf-sign --help
+```
+
 ### Install with Nix
 
 ```bash
-nix profile install github:0x77dev/pdf-sign#pdf-sign
+nix profile install github:signed-page/pdf#pdf-sign
 pdf-sign --help
 ```
 
 ### Install with Cargo
 
 ```bash
-cargo install --git https://github.com/0x77dev/pdf-sign --locked
+cargo install --git https://github.com/signed-page/pdf --locked
 
 # GPG signing (default backend)
 pdf-sign sign document.pdf --key 0xDEADBEEF
@@ -49,8 +56,8 @@ pdf-sign verify document_signed.pdf
 
 ```bash
 # Clone and build
-git clone https://github.com/0x77dev/pdf-sign
-cd pdf-sign
+git clone https://github.com/signed-page/pdf
+cd pdf
 cargo build --release
 ./target/release/pdf-sign --help
 
@@ -64,10 +71,10 @@ nix build
 Multi-platform images (`linux/amd64`, `linux/arm64`, `darwin/arm64`) are published to GHCR with [build provenance attestations](https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations).
 
 ```bash
-docker pull ghcr.io/0x77dev/pdf-sign
+docker pull ghcr.io/signed-page/pdf
 
 # Verify attestation
-gh attestation verify oci://ghcr.io/0x77dev/pdf-sign:latest --repo 0x77dev/pdf-sign
+gh attestation verify oci://ghcr.io/signed-page/pdf:latest --repo signed-page/pdf
 ```
 
 **GPG signing** — mount your host GPG agent socket and keyring (Linux only — [macOS Docker Desktop cannot forward Unix sockets](https://github.com/docker/for-mac/issues/483)):
@@ -77,7 +84,7 @@ docker run --rm \
   -v "$(gpgconf --list-dirs agent-socket)":/gnupg/S.gpg-agent \
   -v ~/.gnupg/pubring.kbx:/gnupg/pubring.kbx:ro \
   -v "$PWD":/data \
-  ghcr.io/0x77dev/pdf-sign sign --key 0xDEADBEEF document.pdf
+  ghcr.io/signed-page/pdf sign --key 0xDEADBEEF document.pdf
 ```
 
 **Sigstore signing (interactive)** — forward the OIDC callback port:
@@ -86,7 +93,7 @@ docker run --rm \
 docker run --rm \
   -p 127.0.0.1:8080:8080 -e OIDC_REDIRECT_PORT=8080 \
   -v "$PWD":/data \
-  ghcr.io/0x77dev/pdf-sign sign --backend sigstore document.pdf
+  ghcr.io/signed-page/pdf sign --backend sigstore document.pdf
 ```
 
 **Sigstore signing (CI/non-interactive)** — pass a pre-obtained identity token:
@@ -95,14 +102,14 @@ docker run --rm \
 docker run --rm \
   -e SIGSTORE_IDENTITY_TOKEN="$OIDC_TOKEN" \
   -v "$PWD":/data \
-  ghcr.io/0x77dev/pdf-sign sign --backend sigstore document.pdf
+  ghcr.io/signed-page/pdf sign --backend sigstore document.pdf
 ```
 
 **Verify signatures:**
 
 ```bash
 docker run --rm -v "$PWD":/data \
-  ghcr.io/0x77dev/pdf-sign verify document_signed.pdf \
+  ghcr.io/signed-page/pdf verify document_signed.pdf \
   --certificate-identity user@example.com \
   --certificate-oidc-issuer https://accounts.google.com
 ```

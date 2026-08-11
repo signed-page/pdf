@@ -4,7 +4,7 @@
 
 Please report suspected vulnerabilities privately through GitHub's private vulnerability reporting for this repository:
 
-<https://github.com/0x77dev/pdf-sign/security/advisories/new>
+<https://github.com/signed-page/pdf/security/advisories/new>
 
 Do not open a public issue for a suspected vulnerability. Include enough detail to reproduce the issue when possible: affected version or commit, platform, input files or commands, expected behavior, and observed behavior.
 

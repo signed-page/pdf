@@ -9,11 +9,11 @@ members = [
 ]
 
 [workspace.package]
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 license = "GPL-3.0-only"
 authors = ["Mykhailo Marynenko <mykhailo@0x77.dev>"]
-repository = "https://github.com/0x77dev/pdf-sign"
+repository = "https://github.com/signed-page/pdf"
 
 [workspace.dependencies]
 # Internal crates

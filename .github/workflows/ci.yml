@@ -59,6 +59,7 @@ jobs:
       - name: Build (flake)
         run: |
           nix build .#pdf-sign --out-link result
+          nix build .#homebrew-bottle --out-link result-homebrew-bottle
 
       - name: Test (flake checks)
         run: |

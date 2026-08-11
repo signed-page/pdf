@@ -33,58 +33,97 @@
       rust-overlay,
       ...
     }:
-    flake-utils.lib.eachDefaultSystem (
-      system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ rust-overlay.overlays.default ];
-        };
+    let
+      homebrewSystems = [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
 
-        craneLib = crane.mkLib pkgs;
-
-        package = import ./nix/package.nix {
-          inherit pkgs craneLib;
-          lib = pkgs.lib;
-        };
-      in
-      {
-        checks = import ./nix/checks.nix {
-          inherit
-            pkgs
-            craneLib
-            package
-            git-hooks
-            system
-            ;
-        };
-
-        packages =
-          let
-            autocast = import ./nix/demo.nix {
-              inherit pkgs craneLib;
-              lib = pkgs.lib;
-            };
-          in
-          {
-            default = package.pdfSign;
-            pdf-sign = package.pdfSign;
-            image = package.image;
-            inherit autocast;
+      mkPackageFor =
+        system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ rust-overlay.overlays.default ];
           };
+          craneLib = crane.mkLib pkgs;
+        in
+        {
+          inherit pkgs craneLib;
+          package = import ./nix/package.nix {
+            inherit pkgs craneLib;
+            lib = pkgs.lib;
+          };
+        };
 
-        devShells.default = import ./nix/shell.nix {
-          inherit pkgs;
-          pdfSign = package.pdfSign;
+      perSystemOutputs = flake-utils.lib.eachDefaultSystem (
+        system:
+        let
+          build = mkPackageFor system;
+          inherit (build) pkgs craneLib package;
           autocast = import ./nix/demo.nix {
             inherit pkgs craneLib;
             lib = pkgs.lib;
           };
-          pre-commit-check = import ./nix/git-hooks.nix {
-            inherit git-hooks system pkgs;
-            src = ./.;
+        in
+        {
+          checks = import ./nix/checks.nix {
+            inherit
+              pkgs
+              craneLib
+              package
+              git-hooks
+              system
+              ;
           };
+
+          packages = {
+            default = package.pdfSign;
+            pdf-sign = package.pdfSign;
+            image = package.image;
+            inherit autocast;
+          }
+          // pkgs.lib.optionalAttrs (builtins.elem system homebrewSystems) {
+            homebrew-bottle = package.homebrewBottle;
+          }
+          // pkgs.lib.optionalAttrs (system == "x86_64-linux") {
+            homebrew-source = package.homebrewSource;
+          };
+
+          devShells.default = import ./nix/shell.nix {
+            inherit pkgs;
+            pdfSign = package.pdfSign;
+            inherit autocast;
+            pre-commit-check = import ./nix/git-hooks.nix {
+              inherit git-hooks system pkgs;
+              src = ./.;
+            };
+          };
+        }
+      );
+
+      darwinRelease = mkPackageFor "aarch64-darwin";
+      armLinuxRelease = mkPackageFor "aarch64-linux";
+      x86LinuxRelease = mkPackageFor "x86_64-linux";
+
+      homebrewRelease = x86LinuxRelease.package.mkHomebrewRelease {
+        sourceBundles = {
+          "aarch64-darwin" = darwinRelease.package.homebrewSource;
+          "aarch64-linux" = armLinuxRelease.package.homebrewSource;
+          "x86_64-linux" = x86LinuxRelease.package.homebrewSource;
         };
-      }
-    );
+        bottles = {
+          arm64_sonoma = darwinRelease.package.homebrewBottle;
+          arm64_linux = armLinuxRelease.package.homebrewBottle;
+          x86_64_linux = x86LinuxRelease.package.homebrewBottle;
+        };
+        version = x86LinuxRelease.package.version;
+        sourceRevision =
+          if self ? rev then self.rev else throw "homebrew-release requires a clean Git revision";
+      };
+    in
+    nixpkgs.lib.recursiveUpdate perSystemOutputs {
+      packages."x86_64-linux".homebrew-release = homebrewRelease;
+    };
 }
