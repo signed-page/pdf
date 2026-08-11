@@ -56,14 +56,11 @@ jobs:
           name: pdf-sign
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      - name: Build (flake)
-        run: |
-          nix build .#pdf-sign --out-link result
-          nix build .#homebrew-bottle --out-link result-homebrew-bottle
-
       - name: Test (flake checks)
-        run: |
-          nix flake check -L
+        run: nix flake check -L
+
+      - name: Build (flake)
+        run: nix build .#pdf-sign .#homebrew-bottle --out-link result
 
       - name: Collect artifact
         run: |
