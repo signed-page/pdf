@@ -54,7 +54,7 @@ jobs:
           fi
 
           tag="$REQUESTED_TAG"
-          if [[ ! "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+          if [[ ! "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
             echo "Invalid release tag: $tag" >&2
             exit 1
           fi
@@ -91,7 +91,7 @@ jobs:
           print(version)
           PY
           )"
-          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
             echo "Cargo.toml contains an unsupported semantic version: $version" >&2
             exit 1
           fi
@@ -138,7 +138,7 @@ jobs:
             accept-flake-config = true
 
       - name: Publish native build to Cachix
-        uses: cachix/cachix-action@v17
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: pdf-sign
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -168,7 +168,7 @@ jobs:
             accept-flake-config = true
 
       - name: Use Cachix release inputs
-        uses: cachix/cachix-action@v17
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: pdf-sign
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -471,7 +471,7 @@ jobs:
             accept-flake-config = true
 
       - name: Use Cachix
-        uses: cachix/cachix-action@v17
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: pdf-sign
 
