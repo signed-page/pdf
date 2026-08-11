@@ -235,6 +235,7 @@ rec {
             fi
             if grep -R -a -q '/nix/store' "$out"; then
               echo "Homebrew musl output contains a Nix store reference" >&2
+              ${pkgs.binutils}/bin/strings "$binary" | grep '/nix/store/' >&2 || true
               exit 1
             fi
           '';
