@@ -919,8 +919,8 @@ jobs:
             exit 1
           fi
 
-          branch="release/pdf-v$VERSION"
           expected_blob="$(git hash-object Formula/pdf.rb)"
+          branch="release/pdf-v$VERSION-${expected_blob:0:12}"
           remote_listing="$RUNNER_TEMP/release-branch"
           set +e
           git ls-remote --exit-code --heads origin "refs/heads/$branch" > "$remote_listing"
