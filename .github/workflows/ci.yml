@@ -868,6 +868,7 @@ jobs:
             echo "Homebrew tap path is already occupied" >&2
             exit 1
           fi
+          mkdir -p "$(dirname "$tap_path")"
           mv "$tap_checkout" "$tap_path"
           ln -s "$tap_path" "$tap_checkout"
           brew trust signed-page/tap
