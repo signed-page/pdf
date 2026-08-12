@@ -860,19 +860,20 @@ jobs:
           set -euo pipefail
 
           tap_checkout="$GITHUB_WORKSPACE/tap"
-          tap_path="$(brew --repository)/Library/Taps/signed-page/homebrew-tap"
-          mkdir -p "$(dirname "$tap_path")"
-          if [[ -e "$tap_path" || -L "$tap_path" ]]; then
-            if [[ "$(realpath "$tap_path")" != "$(realpath "$tap_checkout")" ]]; then
-              echo "Homebrew tap path is already occupied by another checkout" >&2
-              exit 1
-            fi
-          else
-            ln -s "$tap_checkout" "$tap_path"
+          tap_path="$(brew --repository signed-page/tap 2>/dev/null || true)"
+          if [[ -z "$tap_path" ]]; then
+            tap_path="$(brew --repository)/Library/Taps/signed-page/homebrew-tap"
           fi
+          if [[ -e "$tap_path" || -L "$tap_path" ]]; then
+            echo "Homebrew tap path is already occupied" >&2
+            exit 1
+          fi
+          mv "$tap_checkout" "$tap_path"
+          ln -s "$tap_path" "$tap_checkout"
           brew trust signed-page/tap
 
-          cd "$tap_checkout"
+          cd "$tap_path"
+
           git config user.name "$BOT_NAME"
           git config user.email "$BOT_EMAIL"
           if [[ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]]; then
