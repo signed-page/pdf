@@ -35,34 +35,32 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31
         with:
           extra_nix_config: |
             accept-flake-config = true
 
       - name: Cachix
         if: ${{ github.event_name != 'push' }}
-        uses: cachix/cachix-action@v17
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: pdf-sign
 
       - name: Cachix (trusted push)
         if: ${{ github.event_name == 'push' }}
-        uses: cachix/cachix-action@v17
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: pdf-sign
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      - name: Build (flake)
-        run: |
-          nix build .#pdf-sign --out-link result
-
       - name: Test (flake checks)
-        run: |
-          nix flake check -L
+        run: nix flake check -L
+
+      - name: Build (flake)
+        run: nix build .#pdf-sign .#homebrew-bottle --out-link result
 
       - name: Collect artifact
         run: |
@@ -70,7 +68,7 @@ jobs:
           cp -L result/bin/pdf-sign "dist/pdf-sign-${{ runner.os }}-$(uname -m)"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: pdf-sign-${{ matrix.name }}
           path: dist/*
@@ -93,13 +91,13 @@ jobs:
           - name: macos-arm64
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: pdf-sign-${{ matrix.name }}
           path: dist
 
       - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v4
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
         with:
           subject-path: dist/*
 
@@ -132,16 +130,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31
         with:
           extra_nix_config: |
             accept-flake-config = true
 
       - name: Cachix
-        uses: cachix/cachix-action@v17
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: pdf-sign
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -185,7 +183,7 @@ jobs:
           echo "digest=$(cat "$RUNNER_TEMP/image-digest")" >> "$GITHUB_OUTPUT"
 
       - name: Attest image
-        uses: actions/attest-build-provenance@v4
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
         with:
           subject-name: ${{ env.IMAGE }}
           subject-digest: ${{ steps.push-image.outputs.digest }}
@@ -206,16 +204,16 @@ jobs:
       attestations: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31
         with:
           extra_nix_config: |
             accept-flake-config = true
 
       - name: Cachix
-        uses: cachix/cachix-action@v17
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: pdf-sign
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -288,7 +286,7 @@ jobs:
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Attest manifest
-        uses: actions/attest-build-provenance@v4
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
         with:
           subject-name: ${{ env.IMAGE }}
           subject-digest: ${{ steps.digest.outputs.digest }}
