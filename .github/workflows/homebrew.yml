@@ -308,13 +308,9 @@ jobs:
             gh release create "$TAG" \
               --repo "$SOURCE_REPOSITORY" \
               --verify-tag \
+              --draft \
               --title "$TAG" \
               --notes "Vendored corresponding source for pdf-sign $VERSION."
-          fi
-
-          if [[ "$(gh release view "$TAG" --repo "$SOURCE_REPOSITORY" --json isDraft --jq '.isDraft')" != "false" ]]; then
-            echo "Refusing to publish into a draft release" >&2
-            exit 1
           fi
 
           mapfile -t asset_names < <(
@@ -323,6 +319,12 @@ jobs:
           )
           case "${#asset_names[@]}" in
             0)
+              if [[ "$(
+                gh release view "$TAG" --repo "$SOURCE_REPOSITORY" --json isDraft --jq '.isDraft'
+              )" != "true" ]]; then
+                echo "Published immutable release is missing the source archive" >&2
+                exit 1
+              fi
               gh release upload "$TAG" "$source_file" --repo "$SOURCE_REPOSITORY"
               ;;
             1)
@@ -338,11 +340,11 @@ jobs:
               ;;
           esac
 
-          mapfile -t published_assets < <(
+          mapfile -t release_assets < <(
             gh release view "$TAG" --repo "$SOURCE_REPOSITORY" --json assets --jq '.assets[].name' |
               LC_ALL=C sort
           )
-          if [[ "${#published_assets[@]}" -ne 1 || "${published_assets[0]}" != "$source_filename" ]]; then
+          if [[ "${#release_assets[@]}" -ne 1 || "${release_assets[0]}" != "$source_filename" ]]; then
             echo "Release asset set is not exactly the expected source archive" >&2
             exit 1
           fi
@@ -357,6 +359,14 @@ jobs:
           published_sha="$(sha256sum "$published_dir/$source_filename" | cut -d ' ' -f 1)"
           if [[ "$published_sha" != "$expected_source_sha" ]]; then
             echo "Existing release asset differs from the immutable Nix source archive" >&2
+            exit 1
+          fi
+
+          if [[ "$(gh release view "$TAG" --repo "$SOURCE_REPOSITORY" --json isDraft --jq '.isDraft')" == "true" ]]; then
+            gh release edit "$TAG" --repo "$SOURCE_REPOSITORY" --draft=false
+          fi
+          if [[ "$(gh release view "$TAG" --repo "$SOURCE_REPOSITORY" --json isDraft --jq '.isDraft')" != "false" ]]; then
+            echo "Source release did not become public" >&2
             exit 1
           fi
 
