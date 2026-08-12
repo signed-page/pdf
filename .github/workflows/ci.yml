@@ -868,9 +868,18 @@ jobs:
             echo "Homebrew tap path is already occupied" >&2
             exit 1
           fi
+          auth_header="$(
+            git -C "$tap_checkout" config --get http.https://github.com/.extraheader
+          )"
+          if [[ "$auth_header" != AUTHORIZATION:* ]]; then
+            echo "Tap checkout is missing its App authentication header" >&2
+            exit 1
+          fi
           mkdir -p "$(dirname "$tap_path")"
           mv "$tap_checkout" "$tap_path"
           ln -s "$tap_path" "$tap_checkout"
+          git -C "$tap_path" config --local http.https://github.com/.extraheader "$auth_header"
+          unset auth_header
           brew trust signed-page/tap
 
           cd "$tap_path"
