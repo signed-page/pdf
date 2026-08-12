@@ -5,6 +5,7 @@ use sequoia_openpgp::cert::prelude::*;
 use sequoia_openpgp::parse::Parse;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 fn gnupg_home() -> Result<PathBuf> {
   if let Ok(dir) = std::env::var("GNUPGHOME") {
@@ -151,6 +152,35 @@ pub fn load_cert(spec: &str) -> Result<Cert> {
   let matches = find_certs_in_keybox(&certs, spec);
 
   if matches.is_empty() {
+    tracing::debug!(
+      spec = spec,
+      "No matching cert in keybox, trying `gpg --export` fallback"
+    );
+
+    match Command::new("gpg").args(&["--export", "-a", spec]).output() {
+      Ok(out) if out.status.success() && !out.stdout.is_empty() => {
+        tracing::debug!(size = out.stdout.len(), "gpg export returned data");
+        return Cert::from_bytes(&out.stdout)
+          .with_context(|| format!("Failed to parse certificate exported by gpg for '{}'", spec));
+      }
+      Ok(out) if !out.status.success() => {
+        tracing::debug!(
+          status = ?out.status.code(),
+          stderr = %String::from_utf8_lossy(&out.stderr),
+          "`gpg --export` failed"
+        );
+      }
+      Ok(_) => {
+        tracing::debug!(
+          spec = spec,
+          "`gpg --export` had no output we fall through to the original error."
+        );
+      }
+      Err(e) => {
+        tracing::debug!(error = %e, "Failed to run `gpg --export` fallback");
+      }
+    }
+
     bail!(
       "No matching certificate found for '{}'. Provide a .asc file path or import the key into your keybox.",
       spec
