@@ -480,6 +480,14 @@ jobs:
           extra_nix_config: |
             accept-flake-config = true
 
+      - name: Configure OCI registries
+        run: |
+          cat > "$RUNNER_TEMP/registries.conf" <<'EOF'
+          unqualified-search-registries = []
+          EOF
+          echo "CONTAINERS_REGISTRIES_CONF=$RUNNER_TEMP/registries.conf" >> "$GITHUB_ENV"
+          echo "CONTAINERS_REGISTRIES_CONF_OVERRIDE=" >> "$GITHUB_ENV"
+
       - name: Use Cachix
         uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
@@ -497,7 +505,7 @@ jobs:
           error_file="$RUNNER_TEMP/pdf-bottle-inspect.err"
           printf '{"auths":{}}\n' > "$auth_file"
 
-          max_attempts=320
+          max_attempts=20
           for ((attempt = 1; attempt <= max_attempts; attempt++)); do
             if skopeo inspect --authfile "$auth_file" --raw "docker://$BOTTLE_IMAGE:$verified_tag" \
               > "$manifest_file" 2> "$error_file"; then
@@ -519,9 +527,17 @@ jobs:
               break
             fi
 
+            registry_error="$(<"$error_file")"
+            if [[ "$registry_error" != *"manifest unknown"* &&
+                  "$registry_error" != *"name unknown"* &&
+                  "$registry_error" != *"unauthorized"* ]]; then
+              echo "Bottle registry inspection failed permanently" >&2
+              printf '%s\n' "$registry_error" >&2
+              exit 1
+            fi
             if ((attempt == max_attempts)); then
               echo "Verified bottle index did not become anonymously readable" >&2
-              cat "$error_file" >&2
+              printf '%s\n' "$registry_error" >&2
               exit 1
             fi
             sleep 15
