@@ -313,16 +313,15 @@ jobs:
               --notes "Vendored corresponding source for pdf-sign $VERSION."
           fi
 
-          release_is_draft="$(
-            gh release view "$TAG" --repo "$SOURCE_REPOSITORY" --json isDraft --jq '.isDraft'
-          )"
           mapfile -t asset_names < <(
             gh release view "$TAG" --repo "$SOURCE_REPOSITORY" --json assets --jq '.assets[].name' |
               LC_ALL=C sort
           )
           case "${#asset_names[@]}" in
             0)
-              if [[ "$release_is_draft" != "true" ]]; then
+              if [[ "$(
+                gh release view "$TAG" --repo "$SOURCE_REPOSITORY" --json isDraft --jq '.isDraft'
+              )" != "true" ]]; then
                 echo "Published immutable release is missing the source archive" >&2
                 exit 1
               fi
@@ -363,7 +362,7 @@ jobs:
             exit 1
           fi
 
-          if [[ "$release_is_draft" == "true" ]]; then
+          if [[ "$(gh release view "$TAG" --repo "$SOURCE_REPOSITORY" --json isDraft --jq '.isDraft')" == "true" ]]; then
             gh release edit "$TAG" --repo "$SOURCE_REPOSITORY" --draft=false
           fi
           if [[ "$(gh release view "$TAG" --repo "$SOURCE_REPOSITORY" --json isDraft --jq '.isDraft')" != "false" ]]; then
