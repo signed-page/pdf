@@ -178,8 +178,9 @@ rec {
       commonArgs
       // {
         pname = "pdf-sign-homebrew";
+        cargoVendorDir = homebrewCargoVendorDir;
         CARGO_BUILD_TARGET = muslTarget;
-        CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
+        CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static --remap-path-prefix=${homebrewCargoVendorDir}=/cargo/vendor";
         "${muslCcEnv}" = muslCC;
         "CARGO_TARGET_${muslTargetEnv}_LINKER" = muslCC;
         nativeBuildInputs = commonArgs.nativeBuildInputs ++ [
